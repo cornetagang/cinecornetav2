@@ -79,7 +79,7 @@ body.modal-open { overflow: hidden; }
 /* ================================== */
 .main-header {
     background-color: rgba(20, 20, 20, 0.95);
-    padding: 15px 40px;
+    padding: 15px 25px; /* 💡 CAMBIO: Se reduce el padding lateral de 40px a 20px */
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -91,7 +91,7 @@ body.modal-open { overflow: hidden; }
     background-color: rgba(20, 20, 20, 0.95);
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
-.header-container { width: 100%; max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.header-container { width: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
 .header-left {
     display: flex;
     align-items: center;
