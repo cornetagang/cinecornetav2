@@ -7,25 +7,55 @@ html { scroll-behavior: smooth; }
 body { margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-light); font-family: 'Montserrat', sans-serif; overflow-x: hidden; }
 body::-webkit-scrollbar { display: none; }
 .page-wrapper {
-    /* 1. Le decimos que ocupe el 95% del ancho de la pantalla */
     width: 100%;
-
-    /* 2. Le ponemos un tope MÁXIMO (para pantallas 4K gigantes) */
     max-width: 1920px; 
-
-    /* 3. Lo mantenemos centrado */
     margin: 0 auto;
     position: relative;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box; /* 6. ¡IMPORTANTE! */
+    box-sizing: border-box;
+    opacity: 0;
+    transform: scale(0.98);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
+
+.page-wrapper.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
 main { flex-grow: 1; }
 body.modal-open { overflow: hidden; }
-#preloader { position: fixed; inset: 0; background-color: #141414; z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease, visibility 0.5s ease; }
-#preloader.fade-out { opacity: 0; visibility: hidden; }
-.spinner { width: 50px; height: 50px; border: 5px solid #333; border-top-color: var(--primary-red); border-radius: 50%; animation: spin 1s linear infinite; }
+
+#preloader { 
+    position: fixed; 
+    inset: 0; 
+    background-color: #141414; /* Asegúrate que sea igual al fondo del body */
+    z-index: 9999; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    /* Transición suave para desaparecer */
+    transition: opacity 0.6s ease, visibility 0.6s ease; 
+}
+
+#preloader.fade-out { 
+    opacity: 0; 
+    visibility: hidden; 
+    pointer-events: none;
+}
+
+/* Opcional: Haz el spinner un poco más elegante */
+.spinner { 
+    width: 60px; 
+    height: 60px; 
+    border: 4px solid rgba(229, 9, 20, 0.3); /* Rojo transparente */
+    border-top-color: var(--primary-red); 
+    border-radius: 50%; 
+    animation: spin 0.8s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite; 
+}
+
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ================================== */
@@ -79,7 +109,7 @@ body.modal-open { overflow: hidden; }
 /* ================================== */
 .main-header {
     background-color: rgba(20, 20, 20, 0.95);
-    padding: 15px 25px; /* 💡 CAMBIO: Se reduce el padding lateral de 40px a 20px */
+    padding: 15px 20px; /* 💡 CAMBIO: Se reduce el padding lateral de 40px a 20px */
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -105,7 +135,7 @@ body.modal-open { overflow: hidden; }
     flex-shrink: 0;
 }
 .header-logo { height: 25px; width: auto; }
-.logo img { height: 35px; }
+.logo img { height: 40px; }
 .main-nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 10px; align-items: center;}
 .main-nav a { color: var(--text-muted); text-decoration: none; font-size: 1rem; font-weight: bold; padding: 8px 15px; border-radius: 6px; transition: background-color 0.2s ease, color 0.2s ease; }
 .main-nav a:hover, .main-nav a.active { color: var(--text-light); background-color: rgba(255, 255, 255, 0.1); }
@@ -197,6 +227,53 @@ body.modal-open { overflow: hidden; }
     font-weight: bold;
     margin-bottom: 15px;
     padding: 0 4vw;
+}
+
+/* ================================== */
+/* PAGINACIÓN (NUEVO)                 */
+/* ================================== */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 30px 0 50px 0;
+    width: 100%;
+}
+
+.pagination-btn {
+    background-color: var(--panel-dark);
+    color: var(--text-light);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: var(--primary-red);
+    border-color: var(--primary-red);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #111;
+    border-color: #333;
+}
+
+.pagination-info {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 /* ================================== */
@@ -1877,116 +1954,466 @@ body.modal-open { overflow: hidden; }
 }
 
 /* ================================== */
-/* 🎄 TEMA NAVIDEÑO - (Optimizado)     */
-/* "Bosque Oscuro y Dorado"           */
+/* TEXTO DE CARGA (Reemplaza Spinner) */
+/* ================================== */
+.loading-text {
+    font-family: 'Bebas Neue', sans-serif; /* Fuente de títulos */
+    font-size: 3rem;
+    letter-spacing: 3px;
+    font-weight: normal;
+    text-transform: uppercase;
+    color: var(--text-light);
+    
+    /* Animación de respiración/latido */
+    animation: textPulse 1.5s ease-in-out infinite;
+}
+
+/* ======================================================= */
+/* MODAL CINEMATOGRÁFICO (EQUILIBRADO)                     */
+/* ======================================================= */
+@media (min-width: 1400px) {
+    .details-panel {
+        /* 1. Ancho controlado: Ni muy estrecho ni pared a pared */
+        width: 80vw;          /* Bajamos de 90vw a 80vw */
+        max-width: 1300px;    /* Bajamos de 1600px a 1300px para que no se estire tanto */
+        
+        /* 2. Altura más saludable */
+        height: 75vh;         /* Subimos de 65vh a 75vh (el original era 85vh) */
+        min-height: 600px;    
+        
+        align-items: flex-end;
+        margin: auto;         /* Centrado automático */
+    }
+
+    /* 3. Imagen centrada mejor */
+    .details-panel {
+        background-position: center top !important; 
+        background-size: cover !important;
+    }
+
+    /* 4. Poster un poco más grande para llenar espacio vertical */
+    .details-poster img {
+        width: 240px;         /* Un poco más grande que antes */
+        margin-top: -80px;    /* Lo subimos un poco más */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    /* 5. Espaciado interno */
+    .details-content {
+        padding: 40px; 
+        gap: 30px;
+    }
+
+    /* 6. Título equilibrado */
+    .details-info h2 {
+        font-size: 3rem; 
+        line-height: 1.1;
+        margin-bottom: 15px;
+    }
+
+    /* 7. Sinopsis con mejor lectura */
+    #details-synopsis {
+        max-width: 650px; 
+        font-size: 1.05rem;
+        line-height: 1.6;
+    }
+}
+
+/* ======================================================= */
+/* BOTONES "FULL WIDTH" ADAPTATIVOS                        */
+/* ======================================================= */
+
+/* 1. El contenedor ocupa todo el ancho disponible */
+#details-buttons {
+    width: 100%;
+    display: flex;
+    gap: 15px;             /* Espacio entre botones */
+    margin-top: auto;      /* Empuja los botones al final del contenedor */
+    padding-top: 20px;
+}
+
+/* 2. LOS BOTONES PRINCIPALES (Ver ahora, Temporadas, Aleatorio, Info) */
+/* La magia está en 'flex: 1': Significa "repártanse el espacio sobrante equitativamente" */
+#details-buttons .btn-play,
+#details-buttons .btn-info,
+#details-buttons .btn-random,
+#details-buttons .btn {
+    flex: 1;               /* CRECER para llenar el espacio */
+    display: flex;
+    justify-content: center; /* Centrar contenido horizontalmente */
+    align-items: center;     /* Centrar contenido verticalmente */
+    text-align: center;
+    white-space: nowrap;     /* Evitar que el texto salte de línea */
+    padding: 14px 20px;      /* Botones un poco más altos y cómodos */
+    height: 54px;            /* Altura fija para uniformidad */
+    margin: 0;               /* Quitamos márgenes viejos */
+    max-width: none;         /* Quitamos límites de ancho previos */
+}
+
+/* 3. EL BOTÓN DE "MI LISTA" (+) */
+/* Este NO debe crecer, debe mantenerse redondo a la derecha */
+#details-buttons .btn-watchlist {
+    flex: 0 0 54px;        /* No crecer, ancho fijo de 54px */
+    width: 54px;           /* Ancho */
+    height: 54px;          /* Altura (igual a los otros botones) */
+    border-radius: 50%;    /* Círculo perfecto */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+/* Ajuste del icono dentro del botón redondo */
+#details-buttons .btn-watchlist i {
+    font-size: 1.2rem;
+}
+
+/* ======================================================= */
+/* AJUSTE PARA MÓVILES (Evitar que se rompa en pantallas chicas) */
+/* ======================================================= */
+@media (max-width: 768px) {
+    #details-buttons {
+        flex-wrap: wrap; /* Permitir que bajen si no caben */
+    }
+    
+    /* En móvil, el botón de Play ocupa todo el ancho */
+    #details-buttons .btn-play {
+        flex: 1 1 100%; 
+        order: 1;
+    }
+    
+    /* Los otros botones comparten la fila de abajo */
+    #details-buttons .btn-info,
+    #details-buttons .btn-random {
+        flex: 1;
+        order: 2;
+    }
+    
+    /* El botón de lista se queda al final */
+    #details-buttons .btn-watchlist {
+        order: 3;
+    }
+}
+
+/* ================================== */
+/* OPTIMIZACIÓN DE PESTAÑA INACTIVA   */
+/* ================================== */
+/* Cuando la pestaña no se ve, detenemos TODO el consumo gráfico */
+body.tab-inactive * {
+    animation-play-state: paused !important;
+    transition: none !important;
+    /* Detiene gifs o fondos animados complejos si los hubiera */
+    background-attachment: scroll !important; 
+}
+
+/* Ocultar iframes (videos) cuando la pestaña está inactiva */
+/* Esto libera MUCHA memoria RAM inmediatamente */
+body.tab-inactive iframe {
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Ajuste específico para tu tema Navideño */
+.tema-navidad .loading-text {
+    color: var(--christmas-cream); /* Color crema/hueso */
+    text-shadow: 0 0 15px rgba(218, 184, 128, 0.6); /* Resplandor dorado suave */
+}
+
+@keyframes textPulse {
+    0%, 100% {
+        opacity: 0.6;
+        transform: scale(0.98);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+        text-shadow: 0 0 25px rgba(218, 184, 128, 0.9); /* Brillo intenso al latir */
+    }
+}
+
+/* ================================== */
+/* 🎄 TEMA NAVIDEÑO: NOCHE MÁGICA V2  */
 /* ================================== */
 .tema-navidad {
-    /* 1. Redefinir variables de color base */
-    --primary-red: #FFD700;       /* Rojo primario ahora es Dorado */
-    --secondary-red: #f0c800;     /* Rojo secundario es Dorado oscuro */
-    --bg-dark: #102a10;            /* Fondo verde pino */
-    --panel-dark: #1a3a1a;         /* Paneles verde oscuro */
-    --text-light: #e0e0e0;
-    --text-muted: #999;
-
-    /* 2. Variable para texto sobre fondos dorados */
-    --text-on-accent: #102a10; /* Texto oscuro para legibilidad sobre dorado */
+    /* --- PALETA VINTAGE ELEGANTE (Basada en tu imagen) --- */
+    --christmas-cream: #F3EACF;    /* Luz cálida / Blanco hueso */
+    --christmas-gold:  #DAB880;    /* Dorado antiguo / Galleta */
+    --christmas-bronze:#CD8640;    /* Bronce (para detalles) */
+    --christmas-red:   #A31414;    /* Rojo clásico vintage */
+    --christmas-wine:  #65090C;    /* Vino oscuro (para sombras) */
+    --christmas-dark:  #50090A;    /* Fondo oscuro rojizo */
+    
+    /* Variables funcionales reasignadas */
+    --primary-red: var(--christmas-red);
+    --bg-dark: var(--christmas-dark); 
+    --text-light: var(--christmas-cream);
+    --gold-accent: var(--christmas-gold);
 }
 
-/* 3. Nieve (necesaria para z-index) */
-.tema-navidad .page-wrapper {
-    background: transparent;
-    position: relative;
-    z-index: 2; /* Capa 3 (Contenido) */
-}
-.tema-navidad .snow {
-    z-index: 3; /* Capa 2 (Nieve) */
+/* --- FONDO Y AMBIENTE --- */
+.tema-navidad body {
+    background: radial-gradient(circle at top center, #1a2530 0%, #0b1016 100%);
+    background-attachment: fixed;
 }
 
-/* 4. Encabezado y barra inferior */
+/* --- HEADER: LUCES NAVIDEÑAS --- */
 .tema-navidad .main-header {
-    background-color: var(--bg-dark); 
-    border-bottom-color: var(--primary-red); /* Borde inferior dorado */
-}
-.tema-navidad .bottom-nav {
-    background-color: var(--bg-dark);
-    border-top-color: #3a5a3a; /* Borde superior verde oscuro */
+    background-color: #F3EACF;
+    border-bottom: 3px solid var(--primary-red);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: sticky;
 }
 
-/* 5. Paneles (Modales, tarjetas, etc.) */
-.tema-navidad .modal-content,
-.tema-navidad .settings-form-wrapper,
-.tema-navidad .profile-hub-menu-item,
-.tema-navidad .auth-modal-content,
-.tema-navidad .stat-card,
-.tema-navidad .carousel-card {
-    background-color: var(--panel-dark);
-    border-color: #3a5a3a;
+.tema-navidad .main-header nav a {
+    color: #c51111;
+    text-decoration: none;
+    transition: color 0.3s ease; 
+}
+.tema-navidad .main-header nav a:hover {
+    background-color: #c51111;
+    color: #ffffff;
+    box-shadow: 0 0 15px rgba(221, 32, 8, 0.89);
+    border: 1px solid rgba(218, 184, 128, 0);
 }
 
-/* 6. Acentos Dorados (Títulos y enlaces activos) */
-.tema-navidad .carousel-title {
-    color: var(--primary-red); /* Dorado */
-    text-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+.tema-navidad .main-header nav a.active,
+.tema-navidad .main-header nav a.router-link-active { 
+    background-color: var(--christmas-red);
+    color: var(--christmas-cream);
+    box-shadow: 0 4px 15px rgba(163, 20, 20, 0.4);
+    border: 1px solid var(--christmas-red);
 }
-.tema-navidad .main-nav a.active {
+
+/* Tira de luces bajo el header */
+.tema-navidad .main-header::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background-image: 
+        radial-gradient(circle, #ff0000 4px, transparent 5px),
+        radial-gradient(circle, #00ff00 4px, transparent 5px),
+        radial-gradient(circle, #FFD700 4px, transparent 5px);
+    background-position: 0 0, 20px 0, 40px 0;
+    background-size: 60px 10px;
+    background-repeat: repeat-x;
+    animation: flashLights 1s steps(2, start) infinite;
+    z-index: 1001;
+}
+
+@keyframes flashLights {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; }
+    100% { opacity: 1; }
+}
+
+.tema-navidad .movie-card:hover, 
+.tema-navidad .carousel-card:hover {
+    transform: translateY(5px) scale(1);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.4); /* Resplandor dorado */
+    border-color: var(--gold-accent);
+}
+
+/* --- BOTONES FESTIVOS --- */
+.tema-navidad .btn-play {
+    background: linear-gradient(135deg, var(--primary-red), var(--secondary-red));
+    border: 1px solid white;
+    box-shadow: 0 4px 15px rgba(212, 36, 38, 0.4);
+}
+.tema-navidad .btn-play:hover {
+    background: linear-gradient(135deg, var(--secondary-red), var(--primary-red));
+    box-shadow: 0 0 15px var(--gold-accent);
+}
+
+.tema-navidad .btn-watchlist.in-list {
+    background-color: #1D5C2E; /* Verde Pino */
+    border-color: #2ecc71;
+}
+
+/* Botón Ruleta Navideña */
+.tema-navidad .nav-link.roulette-btn img {
+    filter: drop-shadow(0 0 5px var(--gold-accent));
+    animation: spinRouletteIcon 5s infinite linear;
+}
+@keyframes spinRouletteIcon { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- TITULOS CON BRILLO --- */
+.tema-navidad .carousel-title,
+.tema-navidad h1, 
+.tema-navidad h2 {
+    color: var(--snow-white);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+.tema-navidad .carousel-title::first-letter {
     color: var(--primary-red);
-    background-color: rgba(255, 215, 0, 0.05);
+    font-size: 120%;
+}
+
+/* --- MODALES Y PANELES --- */
+.tema-navidad .modal-content,
+.tema-navidad .details-panel,
+.tema-navidad .auth-modal-content,
+.tema-navidad .settings-form-wrapper {
+    background: rgba(15, 20, 28, 0.95);
+    border: 1px solid rgba(255, 215, 0, 0.2); /* Borde dorado sutil */
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    backdrop-filter: blur(10px);
+}
+
+/* --- BARRAS DE NAVEGACIÓN --- */
+.tema-navidad .bottom-nav {
+    background-color: rgba(11, 16, 22, 0.95);
+    border-top: 2px solid var(--primary-red);
 }
 .tema-navidad .bottom-nav .nav-link.active {
-    color: var(--primary-red);
-    border-top-color: var(--primary-red);
-}
-.tema-navidad .profile-tab.active {
-    color: var(--primary-red);
-    border-bottom-color: var(--primary-red);
+    color: var(--gold-accent);
+    border-top-color: var(--gold-accent);
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
-/* 7. Botón "Cerrar Sesión" y perfiles */
-.tema-navidad .user-menu-dropdown a[data-action="logout"] {
-    color: #FFD700;
-}
-.tema-navidad .user-menu-dropdown a[data-action="logout"]:hover {
-    background-color: rgba(255, 215, 0, 0.1);
-    color: #f0c800;
-}
-.tema-navidad .profile-hub-menu-item.logout,
-.tema-navidad .profile-hub-menu-item.logout i {
-    color: #FFD700;
+/* =========================================
+   REPRODUCTOR ESTILO "CINE VINTAGE"
+   ========================================= */
+
+/* 1. Contenedor Principal: Fondo oscuro cálido */
+.tema-navidad #series-player-modal .player-layout-container,
+.tema-navidad .cinema-wrapper {
+    /* Degradado sutil de negro a vino muy oscuro */
+    background: linear-gradient(145deg, #0b0b0b 0%, #1a0505 100%) !important;
+    border: 1px solid rgba(205, 134, 64, 0.3); /* Borde bronce sutil */
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9); /* Sombra profunda */
 }
 
-/* 8. Iconos de Perfil (Stats) */
-.tema-navidad .stat-card i,
-.tema-navidad .profile-hub-menu-item i {
-    color: var(--primary-red);
+/* 2. Título del Episodio (Arriba) */
+.tema-navidad .player-title, 
+.tema-navidad #cinema-title {
+    color: var(--christmas-cream) !important;
+    text-shadow: 0 2px 4px rgba(0,0,0,1);
+    letter-spacing: 1px;
 }
 
-/* 9. Botones de acento en Verde Pino */
-.tema-navidad .btn-random,
-.tema-navidad .genre-progress-fill {
-    background: #006400; /* Verde pino */
-    color: white;
-}
-.tema-navidad .btn-random:hover {
-    background-color: #004d00;
+/* 3. Lista de Episodios (Barra lateral) */
+.tema-navidad .episode-sidebar {
+    background-color: rgba(0, 0, 0, 0.4) !important; /* Más oscuro para contraste */
+    border-left: 1px solid rgba(218, 184, 128, 0.1); /* Línea separadora dorada sutil */
 }
 
-/* 10. Ajuste botones neutros (Ingresar, Info, etc.) */
-.tema-navidad .btn-login {
-    border-color: #999;
-    color: #ccc;
+/* --- TARJETAS DE EPISODIOS --- */
+
+/* Episodio NO seleccionado: Hover */
+.tema-navidad .episode-card:hover {
+    background-color: rgba(218, 184, 128, 0.1) !important; /* Brillo dorado tenue */
+    border-color: rgba(218, 184, 128, 0.3) !important;
 }
-.tema-navidad .btn-login:hover {
-    border-color: #fff;
-    color: #fff;
-    background: rgba(255,255,255,0.1);
+
+/* Episodio ACTIVO (El que se ve en tu foto con borde rojo) */
+.tema-navidad .episode-card.active {
+    /* Borde Dorado en vez de rojo simple, queda más "Premium" */
+    border: 1px solid var(--christmas-gold) !important;
+    
+    /* Fondo rojizo transparente */
+    background: linear-gradient(to right, rgba(163, 20, 20, 0.2), transparent) !important;
+    
+    box-shadow: inset 3px 0 0 var(--christmas-red); /* Pequeña marca roja a la izquierda */
 }
-.tema-navidad .btn-info {
-    background: #3a5a3a; /* Verde oscuro */
-    border-color: #5a7a5a;
+
+/* Títulos dentro de la lista */
+.tema-navidad .episode-card-info h3 {
+    color: var(--christmas-cream) !important;
 }
-.tema-navidad .btn-info:hover {
-    background: #4a6a4a;
+.tema-navidad .episode-card.active .episode-card-info h3 {
+    color: var(--christmas-gold) !important; /* El activo brilla en oro */
+}
+
+/* 4. Botones de Navegación (Anterior / Siguiente) */
+.tema-navidad .episode-nav-btn,
+.tema-navidad .cinema-controls .btn {
+    background-color: transparent !important;
+    border: 1px solid var(--christmas-gold) !important; /* Borde elegante */
+    color: var(--christmas-gold) !important;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+}
+
+.tema-navidad .episode-nav-btn:hover,
+.tema-navidad .cinema-controls .btn:hover {
+    background-color: var(--christmas-red) !important; /* Al pasar el mouse se llena de rojo */
+    color: var(--christmas-cream) !important;
+    box-shadow: 0 0 15px rgba(163, 20, 20, 0.6); /* Resplandor rojo */
+    border-color: var(--christmas-red) !important;
+}
+
+/* 5. Barra de desplazamiento personalizada (Scrollbar) para la lista */
+.tema-navidad .episode-list-container::-webkit-scrollbar {
+    width: 6px;
+    display: block; /* Forzamos que se vea si estaba oculta */
+}
+.tema-navidad .episode-list-container::-webkit-scrollbar-track {
+    background: #0f0f0f; 
+}
+.tema-navidad .episode-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--christmas-bronze); /* Barra color bronce */
+    border-radius: 10px;
+}
+
+/* 6. La pantalla del video (Borde sutil) */
+.tema-navidad .player-container .screen,
+.tema-navidad #cinema .screen {
+    border: 1px solid #333;
+    box-shadow: 0 0 20px rgba(0,0,0,0.8); /* Sombra para dar profundidad */
+}
+
+/* --- BOTONES DE IDIOMA (Original / Español) --- */
+
+/* 1. Estado Base (Botón NO seleccionado) */
+.tema-navidad .lang-btn {
+    /* Fondo transparente para que se vea el degradado oscuro detrás */
+    background-color: transparent !important;
+    
+    /* Borde y texto dorados para un look "Premium" */
+    border: 1px solid var(--christmas-gold) !important;
+    color: var(--christmas-gold) !important;
+    
+    /* Ajustes de texto */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    
+    /* Forma */
+    border-radius: 6px;
+    padding: 8px 18px;
+    transition: all 0.3s ease;
+}
+
+/* 2. Estado Hover (Al pasar el mouse sobre el inactivo) */
+.tema-navidad .lang-btn:hover {
+    background-color: rgba(218, 184, 128, 0.15) !important; /* Baño de oro sutil */
+    box-shadow: 0 0 8px rgba(218, 184, 128, 0.3);
+    transform: translateY(-2px);
+}
+
+/* 3. Estado ACTIVO (El botón seleccionado) */
+.tema-navidad .lang-btn.active {
+    /* Se llena de Rojo Navidad */
+    background-color: var(--christmas-red) !important;
+    
+    /* Borde del mismo rojo o dorado (rojo se ve más limpio) */
+    border-color: var(--christmas-red) !important;
+    
+    /* Texto color Crema para máximo contraste */
+    color: var(--christmas-cream) !important;
+    
+    /* El efecto de "Luz Encendida" */
+    box-shadow: 0 0 15px rgba(163, 20, 20, 0.6) !important;
 }
 
 /* ================================== */
@@ -2011,6 +2438,65 @@ body.modal-open { overflow: hidden; }
     background-size: cover;
     background-position: center center;
     z-index: 1; 
+}
+.tema-navidad .details-panel {
+    background-position: top center !important; 
+    background-size: cover !important; 
+}
+
+.tema-navidad .details-panel::after {
+    background: linear-gradient(
+        to top, 
+        var(--christmas-dark) 10%,
+        rgba(80, 9, 10, 0.6) 40%,
+        transparent 100%
+    ) !important;
+}
+
+/* --- BOTÓN VER AHORA (VINTAGE) --- */
+.tema-navidad .btn-play {
+    /* Fondo: Rojo Clásico Vintage */
+    background: var(--christmas-red) !important; 
+    
+    /* Texto: Dorado Antiguo */
+    color: var(--christmas-gold) !important;
+    
+    /* Borde: Dorado fino */
+    border: 1px solid var(--christmas-gold) !important;
+    
+    /* Sombra suave rojiza */
+    box-shadow: 0 4px 12px rgba(163, 20, 20, 0.5) !important;
+    
+    /* Tipografía un poco más elegante */
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.tema-navidad .btn-play:hover {
+    /* Al pasar el mouse: Fondo Vino Oscuro y brillo Dorado intenso */
+    background: var(--christmas-wine) !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(218, 184, 128, 0.6) !important; /* Resplandor dorado */
+    transform: translateY(-2px);
+    border-color: #fff !important;
+}
+
+/* Ajuste del icono de Play dentro del botón */
+.tema-navidad .btn-play i {
+    color: var(--christmas-gold);
+}
+.tema-navidad .btn-play:hover i {
+    color: #fff;
+}
+
+/* 1. Texto general: Color Crema (Luz cálida) */
+.tema-navidad .carousel-title,
+.tema-navidad h1, 
+.tema-navidad h2 {
+    color: var(--christmas-cream) !important;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9); /* Sombra negra fuerte para leerse bien */
+    font-weight: bold;
+    letter-spacing: 1px;
 }
 
 /* ================================== */
