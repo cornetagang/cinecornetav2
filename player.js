@@ -6,7 +6,6 @@
 let shared;
 
 // 2. Función de inicialización
-// (Se llama una vez desde script.js para pasar las variables)
 export function initPlayer(dependencies) {
     shared = dependencies;
 }
@@ -28,7 +27,7 @@ function loadProgress(seriesId, seasonNum) {
     } catch (e) { return 0; }
 }
 
-// 4. Funciones del reproductor (modificadas para usar 'shared.')
+// 4. Funciones del reproductor
 export function commitAndClearPendingSave() {
     if (shared.appState.player.pendingHistorySave) {
         shared.addToHistoryIfLoggedIn(
@@ -65,13 +64,14 @@ export async function openSeriesPlayer(seriesId, forceSeasonGrid = false) {
     const seasons = Object.keys(seriesEpisodes);
 
     if (forceSeasonGrid && seasons.length > 1) {
-        // Correcto: Llama a la función interna renderSeasonGrid
         renderSeasonGrid(seriesId);
         return;
     }
 
     if (seasons.length === 0) {
-        shared.DOM.seriesPlayerModal.innerHTML = `<button class="close-btn" onclick="closeSeriesPlayerModal()">&times;</button><p>No hay episodios disponibles.</p>`;
+        // 🛠️ CORRECCIÓN 1: Quitamos onclick="" del HTML y lo asignamos con JS abajo
+        shared.DOM.seriesPlayerModal.innerHTML = `<button class="close-btn">&times;</button><p>No hay episodios disponibles.</p>`;
+        shared.DOM.seriesPlayerModal.querySelector('.close-btn').onclick = closeSeriesPlayerModal;
         return;
     }
 
@@ -112,14 +112,17 @@ function renderSeasonGrid(seriesId) {
     const seriesInfo = shared.appState.content.series[seriesId];
     shared.DOM.seriesPlayerModal.className = 'modal show season-grid-view';
     
-    // NOTA: El botón de cerrar (close-btn) Llama a la función globalmente exportada 'closeSeriesPlayerModal()', lo cual es correcto.
+    // 🛠️ CORRECCIÓN 2: Quitamos onclick="" del HTML y lo asignamos con JS abajo
     shared.DOM.seriesPlayerModal.innerHTML = `
-        <button class="close-btn" onclick="closeSeriesPlayerModal()">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="season-grid-container">
             <h2 class="player-title">${seriesInfo.title}</h2>
             <div id="season-grid" class="season-grid"></div>
         </div>
     `;
+    // Asignamos el evento manualmente:
+    shared.DOM.seriesPlayerModal.querySelector('.close-btn').onclick = closeSeriesPlayerModal;
+
     populateSeasonGrid(seriesId);
     shared.appState.player.activeSeriesId = null;
 }
@@ -196,12 +199,13 @@ async function renderEpisodePlayer(seriesId, seasonNum, startAtIndex = null) {
     
     const seasonsCount = Object.keys(shared.appState.content.seriesEpisodes[seriesId]).length;
     
-    // 💡 HTML MODIFICADO: Solo contiene ID, la lógica de click se hace abajo
     const backButtonHTML = seasonsCount > 1 ? `<button class="player-back-link back-to-seasons" data-series-id="${seriesId}"><i class="fas fa-arrow-left"></i> Temporadas</button>` : '';
 
     shared.DOM.seriesPlayerModal.className = 'modal show player-layout-view';
+    
+    // 🛠️ CORRECCIÓN 3: Quitamos onclick="" del HTML y lo asignamos con JS abajo
     shared.DOM.seriesPlayerModal.innerHTML = `
-        <button class="close-btn" onclick="closeSeriesPlayerModal()">&times;</button>
+        <button class="close-btn">&times;</button>
         <div class="player-layout-container">
             <div class="player-container">
                 <h2 id="cinema-title-${seriesId}" class="player-title"></h2>
@@ -219,7 +223,9 @@ async function renderEpisodePlayer(seriesId, seasonNum, startAtIndex = null) {
         </div>
     `;
 
-    // 💡 CORRECCIÓN: Usamos addEventListener/onclick para llamar a las funciones internas
+    // Asignamos el evento del botón cerrar manualmente:
+    shared.DOM.seriesPlayerModal.querySelector('.close-btn').onclick = closeSeriesPlayerModal;
+
     shared.DOM.seriesPlayerModal.querySelector(`#prev-btn-${seriesId}`).onclick = () => navigateEpisode(seriesId, -1);
     shared.DOM.seriesPlayerModal.querySelector(`#next-btn-${seriesId}`).onclick = () => navigateEpisode(seriesId, 1);
     shared.DOM.seriesPlayerModal.querySelectorAll(`.lang-btn`).forEach(btn => {
@@ -245,7 +251,7 @@ function populateEpisodeList(seriesId, seasonNum) {
         const card = document.createElement('div');
         card.className = 'episode-card';
         card.id = `episode-card-${seriesId}-${seasonNum}-${index}`;
-        // 💡 CORRECCIÓN: Usamos addEventListener para llamar a la función interna
+        
         card.addEventListener('click', () => openEpisode(seriesId, seasonNum, index));
 
         card.innerHTML = `
@@ -484,7 +490,6 @@ export function openSeriesPlayerDirectlyToSeason(seriesId, seasonNum) {
     document.body.classList.add('modal-open');
     shared.DOM.seriesPlayerModal.classList.add('show');
     
-    // 💡 CORRECCIÓN: Llama a renderEpisodePlayer en lugar de renderSeasonGrid
     renderEpisodePlayer(seriesId, seasonNum);
 }
 
